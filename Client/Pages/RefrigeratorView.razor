@@ -1,0 +1,72 @@
+@page "/refrigerator/{id:int}"
+@attribute [Authorize]
+@using System.IO
+@inject IJSRuntime JS
+@inject IRefrigeratorService RefrigeratorService
+
+<h3>@refrigerator.Name</h3>
+<a href="refrigerator/@refrigerator.Id/indicator" class="btn btn-primary float-end mb-2">Add Indicators</a>
+
+
+@if (RefrigeratorService.Indicators == null)
+{
+    <span>Loading Indicators...</span>
+}
+else
+{
+    <button class="btn btn-primary float-end ml-2 mb-2" @onclick="ExportToCSV">
+        Export to csv
+    </button>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Value</th>
+            </tr>
+        </thead>
+        <tbody>
+            <Virtualize Items="RefrigeratorService.Indicators" Context="indicator">
+                <tr>
+                    <td>@indicator.DateCreated</td>
+                    <td>@indicator.Value</td>
+                </tr>
+            </Virtualize>
+        </tbody>
+    </table>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    Refrigerator refrigerator = new Refrigerator();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Id != 0)
+        {
+            Refrigerator dbRefrigerator = (await RefrigeratorService.GetRefrigerator(Id)).Data;
+            if (dbRefrigerator == null)
+            {
+                return;
+            }
+            refrigerator = dbRefrigerator;
+
+            await RefrigeratorService.GetIndicators(Id);
+        }
+    }
+
+    private async Task ExportToCSV()
+    {
+        var fileName = "indicators.csv";
+        string csv = "ID;DateCreated;Value\r\n";
+        foreach (var item in RefrigeratorService.Indicators)
+        {
+            csv += $"{item.Id};{item.DateCreated};{item.Value}\r\n";
+        }
+
+        var bytes = System.Text.Encoding.UTF8.GetBytes(csv.ToString());
+
+        await JS.InvokeVoidAsync("downloadFileFromStream", fileName, Convert.ToBase64String(bytes));
+    }
+}

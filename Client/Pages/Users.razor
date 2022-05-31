@@ -1,0 +1,56 @@
+@page "/users"
+@attribute [Authorize(Roles = "Admin")]
+@inject IAuthService AuthService
+@inject NavigationManager NavigationManager
+
+<h3>Users</h3>
+
+@if (AuthService.Users == null)
+{
+    <span>Loading Users...</span>
+}
+else
+{
+    <button class="btn btn-primary float-end mb-2" @onclick="CreateUser">
+        <i class="oi oi-plus"></i> Add new User
+    </button>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>User</th>
+                <th>Role</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            <Virtualize Items="AuthService.Users" Context="user">
+                <tr>
+                    <td>@user.Email</td>
+                    <td>@user.Role</td>
+                    <td>
+                        <button class="btn btn-primary" @onclick="(() => EditUser(user.Id))">
+                            <i class="oi oi-pencil"></i>
+                        </button>
+                    </td>
+                </tr>
+            </Virtualize>
+        </tbody>
+    </table>
+}
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await AuthService.GetUsers();
+    }
+
+    void EditUser(int userId)
+    {
+        NavigationManager.NavigateTo($"user/{userId}");
+    }
+
+    void CreateUser()
+    {
+        NavigationManager.NavigateTo("register");
+    }
+}

@@ -1,0 +1,48 @@
+@page "/refrigerator/{id:int}/indicator"
+@attribute [Authorize]
+@inject IRefrigeratorService RefrigeratorService
+@inject NavigationManager NavigationManager
+
+<h3>Add indicators for "@refrigerator.Name"</h3>
+<EditForm Model="indicator" OnValidSubmit="AddRefrigeratorIndicator">
+    <DataAnnotationsValidator></DataAnnotationsValidator>
+    <input type="hidden" id="fridgeId" @bind="indicator.FridgeId" class="form-control" />
+    <div class="mb-0">
+        <label for="title">Value</label>
+        <InputNumber id="Value" @bind-Value="indicator.Value" class="form-control"></InputNumber>
+    </div>
+    <div class="mb-0">
+        <label for="title">Data</label>
+        <InputDateTime id="DateCreated" @bind-Value="indicator.DateCreated" class="form-control"></InputDateTime>
+    </div>
+    <button type="submit" class="btn btn-primary float-end">Save</button>
+    <ValidationSummary></ValidationSummary>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    Indicator indicator = new Indicator();
+    Refrigerator refrigerator = new Refrigerator();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Id != 0)
+        {
+            Refrigerator dbRefrigerator = (await RefrigeratorService.GetRefrigerator(Id)).Data;
+            if (dbRefrigerator == null)
+            {
+                return;
+            }
+            refrigerator = dbRefrigerator;
+            indicator.FridgeId = Id;
+        }
+    }
+
+    async void AddRefrigeratorIndicator()
+    {
+        var result = await RefrigeratorService.CreateRefrigeratorIndicator(indicator);
+        NavigationManager.NavigateTo($"refrigerator/{result.FridgeId}");
+    }
+}

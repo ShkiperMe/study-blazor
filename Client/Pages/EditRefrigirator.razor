@@ -1,0 +1,96 @@
+@page "/edit/refrigerator"
+@page "/edit/refrigerator/{id:int}"
+@attribute [Authorize]
+@inject IRefrigeratorService RefrigeratorService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+@if (loading)
+{
+    <span>@msg</span>
+}
+else
+{
+    @if (refrigerator.Editing)
+    {
+        <h3>Edit "@refrigerator.Name"</h3>
+    }
+    else if (refrigerator.IsNew)
+    {
+        <h3>Add a new Refrigerator</h3>
+    }
+
+    <EditForm Model="refrigerator" OnValidSubmit="AddOrUpdateRefrigerator">
+        <DataAnnotationsValidator></DataAnnotationsValidator>
+        <div class="mb-0">
+            <label for="title">Name</label>
+            <InputText id="name" @bind-Value="refrigerator.Name" class="form-control"></InputText>
+        </div>
+        <button type="submit" class="btn btn-primary float-end">@btnText</button>
+        <ValidationSummary></ValidationSummary>
+    </EditForm>
+    @if (!refrigerator.IsNew)
+    {
+        <button type="button" class="btn btn-danger float-start" @onclick="DeleteRefrigerator">
+            Delete Refrigerator
+        </button>
+    }
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    Refrigerator refrigerator = new Refrigerator();
+    bool loading = true;
+    string btnText = "";
+    string msg = "Loading...";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Id == 0)
+        {
+            refrigerator = new Refrigerator { IsNew = true };
+            btnText = "Add Refrigerator";
+        }
+        else
+        {
+            Refrigerator dbRefrigerator = (await RefrigeratorService.GetRefrigerator(Id)).Data;
+            if (dbRefrigerator == null)
+            {
+                msg = $"Refrigerator with Id '{Id}' does not exist!";
+                return;
+            }
+            refrigerator = dbRefrigerator;
+            refrigerator.Editing = true;
+            btnText = "Update Refrigerator";
+        }
+        loading = false;
+    }
+
+    async void AddOrUpdateRefrigerator()
+    {
+        if (refrigerator.IsNew)
+        {
+            var result = await RefrigeratorService.CreateRefrigerator(refrigerator);
+            NavigationManager.NavigateTo($"refrigerator/{result.Id}");
+        }
+        else
+        {
+            refrigerator.IsNew = false;
+            refrigerator = await RefrigeratorService.UpdateRefrigerator(refrigerator);
+            NavigationManager.NavigateTo($"refrigerator/{refrigerator.Id}", true);
+        }
+    }
+
+    async void DeleteRefrigerator()
+    {
+        bool confirmed = await JSRuntime.InvokeAsync<bool>("confirm",
+            $"Do you really want to delete '{refrigerator.Name}'?");
+        if (confirmed)
+        {
+            await RefrigeratorService.DeleteRefrigerator(refrigerator);
+            NavigationManager.NavigateTo("");
+        }
+    }
+}

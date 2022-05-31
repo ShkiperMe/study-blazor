@@ -1,0 +1,15 @@
+<nav class="navbar navbar-expand">
+    <div class="navbar-nav">
+        <AuthorizeView>
+            <Authorized>
+                <li class="nav-item nav-link">
+                    Hello, @context.User.Identity.Name!
+                </li>
+                <NavLink href="logout" class="nav-item nav-link">Log out</NavLink>
+            </Authorized>
+            <NotAuthorized>
+                <NavLink href="login" class="nav-item nav-link">Log in</NavLink>
+            </NotAuthorized>
+        </AuthorizeView>
+    </div>
+</nav>

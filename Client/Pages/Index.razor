@@ -1,0 +1,58 @@
+﻿@page "/"
+@attribute [Authorize]
+@inject IRefrigeratorService RefrigeratorService
+@inject NavigationManager NavigationManager
+
+<h3>Refrigerators</h3>
+
+@if (RefrigeratorService.Refrigerators == null)
+{
+    <span>Loading Refrigerators...</span>
+}
+else
+{
+    <button class="btn btn-primary float-end mb-2" @onclick="CreateRefrigerator">
+        <i class="oi oi-plus"></i> Add new Refrigerator
+    </button>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Refrigerator</th>
+                <th>Indicators</th>
+                <th>Graph</th>
+                <th>Edit</th>
+            </tr>
+        </thead>
+        <tbody>
+            <Virtualize Items="RefrigeratorService.Refrigerators" Context="refrigerator">
+                <tr>
+                    <td>@refrigerator.Name</td>
+                    <td><a href="refrigerator/@refrigerator.Id">Indicators</a></td>
+                    <td><a href="refrigerator/@refrigerator.Id/graph">See graph</a></td>
+                    <td>
+                        <button class="btn btn-primary" @onclick="(() => EditRefrigerator(refrigerator.Id))">
+                            <i class="oi oi-pencil"></i>
+                        </button>
+                    </td>
+                </tr>
+        </Virtualize>
+    </tbody>
+</table>
+}
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await RefrigeratorService.GetRefrigerators();
+    }
+
+    void EditRefrigerator(int refrigeratorId)
+    {
+        NavigationManager.NavigateTo($"edit/refrigerator/{refrigeratorId}");
+    }
+
+    void CreateRefrigerator()
+    {
+        NavigationManager.NavigateTo("edit/refrigerator");
+    }
+}

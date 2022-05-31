@@ -1,0 +1,43 @@
+@page "/refrigerator/{id:int}/graph"
+@attribute [Authorize]
+@inject IRefrigeratorService RefrigeratorService
+
+<h3>@refrigerator.Name</h3>
+<a href="refrigerator/@refrigerator.Id/indicator" class="btn btn-primary float-end">Add Indicators</a>
+
+@if (RefrigeratorService.Indicators == null)
+{
+    <span>Loading Indicators...</span>
+}
+else
+{
+    <SfChart>
+        <ChartPrimaryXAxis ValueType="Syncfusion.Blazor.Charts.ValueType.Category"></ChartPrimaryXAxis>
+        <ChartSeriesCollection>
+            <ChartSeries DataSource="@RefrigeratorService.Indicators" XName="DateCreated" YName="Value" Type="ChartSeriesType.Column">
+            </ChartSeries>
+        </ChartSeriesCollection>
+    </SfChart>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    Refrigerator refrigerator = new Refrigerator();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Id != 0)
+        {
+            Refrigerator dbRefrigerator = (await RefrigeratorService.GetRefrigerator(Id)).Data;
+            if (dbRefrigerator == null)
+            {
+                return;
+            }
+            refrigerator = dbRefrigerator;
+
+            await RefrigeratorService.GetIndicators(Id);
+        }
+    }
+}
