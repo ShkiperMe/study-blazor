@@ -75,7 +75,6 @@ namespace Fridge.Server
                 app.UseHsts();
             }
 
-            app.UseSwagger();
             app.UseHttpsRedirection();
             app.UseBlazorFrameworkFiles();
             app.UseStaticFiles();
@@ -85,10 +84,14 @@ namespace Fridge.Server
             app.UseAuthentication();
             app.UseAuthorization();
 
+            app.UseSwagger();
+            app.UseSwaggerUI();
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapRazorPages();
                 endpoints.MapControllers();
+                endpoints.MapSwagger();
                 endpoints.MapFallbackToFile("index.html");
             });
         }
