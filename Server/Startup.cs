@@ -36,13 +36,15 @@ namespace Fridge.Server
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
             });
 
+            services.AddTransient<IRefrigeratorService, RefrigeratorServiceDapper>(provider => new RefrigeratorServiceDapper(Configuration.GetConnectionString("DefaultConnection")));
+
             services.AddControllersWithViews();
             services.AddRazorPages();
 
             services.AddSwaggerGen();
 
             services.AddScoped<IAuthService, AuthService>();
-            services.AddScoped<IRefrigeratorService, RefrigeratorService>();
+            //services.AddScoped<IRefrigeratorService, RefrigeratorService>();
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
